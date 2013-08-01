@@ -26,7 +26,7 @@ namespace SimpleWebTicket
         protected void Page_Load(object sender, EventArgs e)
         {
             // [REQUIRED] Name of the user to get a ticket for
-            _userId = "rfn@qlikview.com";
+            _userId = "rfn";
             // [OPTIONAL] A friendly name for the user. For example if the username is a social security number of phonenumber the friendly name could be his/hers real name
             _userFriendlyName = "Rikard Braathen";
             // [OPTIONAL] Semicolon separated string with groups/roles the user belongs to for use with Section Access or authorization
