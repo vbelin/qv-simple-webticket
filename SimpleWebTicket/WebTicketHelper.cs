@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Web;
 using System.Xml.Linq;
@@ -61,12 +63,34 @@ namespace SimpleWebTicket
             _userGroups = group.ToString();
         }
 
+        public string GetSelections(string selections)
+        {
+            var selectionCollection = new StringBuilder();
+
+            foreach (string value in selections.Split(';'))
+            {
+                selectionCollection.Append("&select=");
+                selectionCollection.Append(value);
+            }
+
+            return selectionCollection.ToString();
+        }
+
         /// <summary>
         /// Redirects to QlikView after succesfull retrieval of webticket
         /// </summary>
-        public void RedirectToQlikView()
+        /// <param name="document">QlikView document to open directly, bypassing AccessPoint</param>
+        /// <param name="host">QlikView host name (as found in QEMC) is required when using document parameter</param>
+        /// <param name="selections">Semicolon separated list of selections, ie: LB38,Yellow;LB39,Banana (Note: Only the first selection works at the moment)</param>
+        public void RedirectToQlikView(string document = "", string host = "", string selections = "")
         {
-            Response.Redirect(string.Format("{0}QvAJAXZfc/Authenticate.aspx?type=html&webticket={1}&try={2}&back={3}", AccessPointServer, _webTicket, TryUrl, BackUrl));
+            if (!String.IsNullOrEmpty(selections))
+                selections = GetSelections(selections);
+
+            if (String.IsNullOrEmpty(document))
+                Response.Redirect(string.Format("{0}QvAJAXZfc/Authenticate.aspx?type=html&webticket={1}&try={2}&back={3}", AccessPointServer, _webTicket, TryUrl, BackUrl));
+            else
+                Response.Redirect(string.Format("{0}QvAJAXZfc/Authenticate.aspx?type=html&webticket={1}&try={2}&back={3}", AccessPointServer, _webTicket, Uri.EscapeDataString("/QvAJAXZfc/AccessPoint.aspx?open=&id=" + host + "%7C" + document + selections + "&client=Ajax"), BackUrl));
         }
     }
 }
