@@ -6,7 +6,7 @@ SimpleWebTicket is a WebTicket solution for QlikView 11 with the aim of being as
 Get Started
 -----------
 
-As can be seen in the Page_Load function below there's only one required thing to change. You need to provide the user identity for which you want to retreive the webticket in the _userId variable. Both _userFriendlyName and _userGroups are highly optional.
+As can be seen in the Page_Load function below there's only one required thing to change. You need to provide the user identity for which you want to retreive the webticket in the _userId variable. Both _userFriendlyName and _userGroups are highly optional. This setup should work out of the box with a QlikView Server installation running on localhost with Windows Authentication.
 
 ```c#
 protected void Page_Load(object sender, EventArgs e)
@@ -23,7 +23,7 @@ protected void Page_Load(object sender, EventArgs e)
     if (!String.IsNullOrEmpty(_webTicket))
         RedirectToQlikView();
     else
-        Response.Write("An error occured!");
+        Response.Write(String.Format("Failed to retrieve web ticket for user id \"{0}\", try to verify the authentication settings.", _userId));
 }
 ```
 
@@ -54,6 +54,46 @@ Configuration
 </GetWebTicket>
 ```
 
+It's also strongly recommended to prohobit anonymous users in QlikView Server and last but not least set a custom login page for Authentication in the QlikView Web Server configuration and then you set this page which retrieves the webticket as login page of course. This will redirect the user to get a ticket when they're trying to access QlikView.
+
+In Default.aspx.cs there are a couple of variables that needs to be changed according to different scenarious. Basically there are 3 ways to do this, all of them involves the options above. For example if using Option 2 above with IP whitelists and Anonymous Authentication in IIS the Anonymous variable needs to be set to true.
+
+```c#
+    private const bool Anonymous = true;
+```
+
+Likewise, if using Option 1 and Windows Authentication the above flag should be false but then you need to supply the credentials in the UserName and Password variables.
+
+```c#
+    private const string UserName = "QTSEL\\rfn";
+    private const string Password = "MyVerySecretPassword";
+```
+
+Instead of entering the username and password it's also possible to set the Application Pool for the website that runs the SimpleWebTicket code to a Windows account. Try using the "QlikView IIS" Application Pool for example.
+
+This is it, this is the most common things people forget about when trying to do webtickets with QlikView.
+
+Advanced
+--------
+
+Sometimes you want to bypass AccessPoint and go directly to a application instead. This is possible by specifying the application name in the RedirectToQlikView() function call, please note though that when using an application as target it's REQUIRED to also enter the hostname of the QlikView Server.
+
+```c#
+    if (!String.IsNullOrEmpty(_webTicket))
+        RedirectToQlikView("Movies Database.qvw", "QVS@sesth-rfn");
+```
+
+To go even further you might want to select something inside of the application. This is also possible, but unfortunately limited to only ONE selection at this time due to how everything works. I've tried to work around it with little success, any ideas for a solution is welcome! Still, this works...
+
+```c#
+  if (!String.IsNullOrEmpty(_webTicket))
+      RedirectToQlikView("Movies Database.qvw", "QVS@sesth-rfn","LB39,Banana");
+```
+
+Good To Know
+------------
+
+If you want to include SimpleWebTicket into an already existing project then you need to copy the code from Default.aspx.cs together with the Commhelper and WebTicketHelper classes. Don't forget to change the namespace in the classes to suit your project and you should be good to go!
 
 License
 -------

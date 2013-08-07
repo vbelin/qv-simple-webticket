@@ -4,25 +4,31 @@ namespace SimpleWebTicket
 {
     public partial class Default : System.Web.UI.Page
     {
+        #region Authentication Settings
         // If TrustedIPs are used in c:\ProgramData\QlikTech\WebServer\config.xml this should be set to true, otherwise false
         private const bool Anonymous = false;
         // If Windows Authentication is used for GetWebTicket.aspx then credentials may be specified below. If no credentials is provided, UseDefaultCredentials will be used
         private const string UserName = "";
         private const string Password = "";
-        
+        #endregion
+
+        #region Redirection Settings
         // URL that the user is redirected to after a successful login. AccessPoint is usually where you want to go
         private const string TryUrl = "/QlikView/";
         // URL redirected to after a failed login attempt
         private const string BackUrl = "";
         // Server where the QlikView AccessPoint resides (ends with slash)
         private const string AccessPointServer = "http://localhost/";
-        
+        #endregion
+
+        #region VariableDeclarations
         // Variable declarations (DON'T CHANGE HERE)
         private string _userId = "";
         private string _userFriendlyName = "";
         private string _userGroups = "";
-        private string _webTicket = ""; 
- 
+        private string _webTicket = "";
+        #endregion
+
         protected void Page_Load(object sender, EventArgs e)
         {
             // [REQUIRED] Name of the user to get a ticket for
@@ -37,7 +43,7 @@ namespace SimpleWebTicket
             if (!String.IsNullOrEmpty(_webTicket))
                 RedirectToQlikView();
             else
-                Response.Write("An error occured!");
+                Response.Write(String.Format("Failed to retrieve web ticket for user id \"{0}\", try to verify the authentication settings.", _userId));
         }
     }
 }
