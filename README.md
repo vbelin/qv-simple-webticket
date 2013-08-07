@@ -59,14 +59,14 @@ It's also strongly recommended to prohobit anonymous users in QlikView Server an
 In Default.aspx.cs there are a couple of variables that needs to be changed according to different scenarious. Basically there are 3 ways to do this, all of them involves the options above. For example if using Option 2 above with IP whitelists and Anonymous Authentication in IIS the Anonymous variable needs to be set to true.
 
 ```c#
-    private const bool Anonymous = true;
+private const bool Anonymous = true;
 ```
 
 Likewise, if using Option 1 and Windows Authentication the above flag should be false but then you need to supply the credentials in the UserName and Password variables.
 
 ```c#
-    private const string UserName = "QTSEL\\rfn";
-    private const string Password = "MyVerySecretPassword";
+private const string UserName = "QTSEL\\rfn";
+private const string Password = "MyVerySecretPassword";
 ```
 
 Instead of entering the username and password it's also possible to set the Application Pool for the website that runs the SimpleWebTicket code to a Windows account. Try using the "QlikView IIS" Application Pool for example.
@@ -79,15 +79,15 @@ Advanced
 Sometimes you want to bypass AccessPoint and go directly to a application instead. This is possible by specifying the application name in the RedirectToQlikView() function call, please note though that when using an application as target it's REQUIRED to also enter the hostname of the QlikView Server.
 
 ```c#
-    if (!String.IsNullOrEmpty(_webTicket))
-        RedirectToQlikView("Movies Database.qvw", "QVS@sesth-rfn");
+if (!String.IsNullOrEmpty(_webTicket))
+    RedirectToQlikView("Movies Database.qvw", "QVS@sesth-rfn");
 ```
 
 To go even further you might want to select something inside of the application. This is also possible, but unfortunately limited to only ONE selection at this time due to how everything works. I've tried to work around it with little success, any ideas for a solution is welcome! Still, this works...
 
 ```c#
-  if (!String.IsNullOrEmpty(_webTicket))
-      RedirectToQlikView("Movies Database.qvw", "QVS@sesth-rfn","LB39,Banana");
+if (!String.IsNullOrEmpty(_webTicket))
+    RedirectToQlikView("Movies Database.qvw", "QVS@sesth-rfn", "LB39,Banana");
 ```
 
 Good To Know
