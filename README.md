@@ -76,7 +76,7 @@ This is it, this is the most common things people forget about when trying to do
 Advanced
 --------
 
-Sometimes you want to bypass AccessPoint and go directly to a application instead. This is possible by specifying the application name in the RedirectToQlikView() function call, please note though that when using an application as target it's REQUIRED to also enter the hostname of the QlikView Server.
+Sometimes you want to bypass AccessPoint and go directly to an application instead. This is possible by specifying the application name in the RedirectToQlikView() function call, please note though that when using an application as target it's REQUIRED to also enter the hostname of the QlikView Server.
 
 ```c#
 if (!String.IsNullOrEmpty(_webTicket))
@@ -93,7 +93,7 @@ if (!String.IsNullOrEmpty(_webTicket))
 Good To Know
 ------------
 
-If you want to include SimpleWebTicket into an already existing project then you need to copy the code from Default.aspx.cs together with the Commhelper and WebTicketHelper classes. Don't forget to change the namespace in the classes to suit your project and you should be good to go!
+If you want to include SimpleWebTicket into an already existing project then you need to copy the code from Default.aspx.cs together with the Commhelper class. Don't forget to change the namespace in the classes to suit your project and you should be good to go!
 
 License
 -------

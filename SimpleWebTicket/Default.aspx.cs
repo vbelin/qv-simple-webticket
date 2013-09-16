@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Net;
+using System.Web;
+using System.Web.Security;
 
 namespace SimpleWebTicket
 {
@@ -10,6 +13,8 @@ namespace SimpleWebTicket
         // If Windows Authentication is used for GetWebTicket.aspx then credentials may be specified below. If no credentials is provided, UseDefaultCredentials will be used
         private const string UserName = "";
         private const string Password = "";
+        // Path to GetWebTicket.aspx on QlikView Server
+        private const string GetWebTicketPath = "http://localhost/QvAJAXZfc/GetWebTicket.aspx";
         #endregion
 
         #region Redirection Settings
@@ -37,6 +42,14 @@ namespace SimpleWebTicket
             _userFriendlyName = "Rikard Braathen";
             // [OPTIONAL] Semicolon separated string with groups/roles the user belongs to for use with Section Access or authorization
             _userGroups = "PreSales;Europe;Stockholm Office";
+
+            // Forms Authenticastion example
+            //if (Request.Cookies[FormsAuthentication.FormsCookieName] != null)
+            //{
+            //    HttpCookie authCookie = Request.Cookies[FormsAuthentication.FormsCookieName];
+            //    FormsAuthenticationTicket ticket = FormsAuthentication.Decrypt(authCookie.Value);
+            //    _userId = ticket.Name;
+            //}
 
             GetWebTicket();
 
