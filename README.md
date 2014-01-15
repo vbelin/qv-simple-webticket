@@ -95,6 +95,11 @@ Good To Know
 
 If you want to include SimpleWebTicket into an already existing project then you need to copy the code from Default.aspx.cs together with the Commhelper class. Don't forget to change the namespace in the classes to suit your project and you should be good to go!
 
+Troubleshooting
+---------------
+
+If the request for a webticket fails it more or less always has to do with trust issues, that you are not allowed to request a webticket. Common problems when using white lists is that the IP address for TrustedIP is not what you think it is. For example with IPv6 enabled on the server localhost is not 127.0.0.1 anymore but ::1. Try to ping localhost to see what it resolves into.
+
 License
 -------
 
