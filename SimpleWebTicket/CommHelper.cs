@@ -2,13 +2,20 @@
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Web;
 using System.Xml.Linq;
+using System.Configuration;
 
 namespace SimpleWebTicket
 {
     public partial class Default
     {
+        public static class UserDetails
+        {
+            public static string UserId { get; set; }
+            public static string UserGroups { get; set; }
+            public static string WebTicket { get; set; }
+        }
+
         public string Execute(string address, string method = "GET", string data = "")
         {
             try
@@ -16,8 +23,12 @@ namespace SimpleWebTicket
                 if (method == "POST")
                 {
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(address);
+                    bool Anonymous = ConfigurationManager.AppSettings["Anonymous"].ToLower() == "true" ? true : false;
                     if (!Anonymous)
                     {
+                        var UserName = ConfigurationManager.AppSettings["UserName"];
+                        var Password = ConfigurationManager.AppSettings["Password"];
+
                         if (UserName == "" && Password == "")
                             request.UseDefaultCredentials = true;
                         else
@@ -25,6 +36,8 @@ namespace SimpleWebTicket
 
                         request.PreAuthenticate = true;
                     }
+                    request.KeepAlive = false;
+                    request.ProtocolVersion = HttpVersion.Version10;
                     request.Method = method;
                     request.Timeout = 5000;
                     request.ContentType = "application/x-www-form-urlencoded";
@@ -67,40 +80,33 @@ namespace SimpleWebTicket
         /// </summary>
         public void GetWebTicket()
         {
-            if (String.IsNullOrEmpty(_userId))
+            if (String.IsNullOrEmpty(UserDetails.UserId))
                 return;
 
-            if (!String.IsNullOrEmpty(_userGroups))
+            if (!String.IsNullOrEmpty(UserDetails.UserGroups))
                 GetGroups();
 
-            string webTicketXml = string.Format("<Global method=\"GetWebTicket\"><UserId>{0}</UserId>{1}</Global>", _userId, _userGroups);
+            string webTicketXml = string.Format("<Global method=\"GetWebTicket\"><UserId>{0}</UserId>{1}</Global>", UserDetails.UserId, UserDetails.UserGroups);
 
-            string result = Execute(GetWebTicketPath, "POST", webTicketXml);
+            string result = Execute(ConfigurationManager.AppSettings["GetWebTicketServer"], "POST", webTicketXml);
 
             if (string.IsNullOrEmpty(result) || result.Contains("Invalid call"))
                 return;
 
             XDocument doc = XDocument.Parse(result);
 
-            _webTicket = doc.Root.Element("_retval_").Value;
-
-            // Set friendly name cookie for AccessPoint
-            if (!String.IsNullOrEmpty(_userFriendlyName))
-            {
-                var cookie = new HttpCookie("WelcomeName" + HttpUtility.UrlEncode(_userId)) { Value = _userFriendlyName, Path = String.Format("{0}QvAJAXZfc/", AccessPointServer) };
-                Response.Cookies.Add(cookie);
-            }
+            UserDetails.WebTicket = doc.Root.Element("_retval_").Value;
         }
 
         public void GetGroups()
         {
             var group = new StringBuilder();
 
-            if (!string.IsNullOrWhiteSpace(_userGroups))
+            if (!string.IsNullOrWhiteSpace(UserDetails.UserGroups))
             {
                 group.Append("<GroupList>");
 
-                foreach (string value in _userGroups.Split(';'))
+                foreach (string value in UserDetails.UserGroups.Split(';'))
                 {
                     group.Append("<string>");
                     group.Append(value);
@@ -113,7 +119,7 @@ namespace SimpleWebTicket
                 group.Append("</GroupsIsNames>");
             }
 
-            _userGroups = group.ToString();
+            UserDetails.UserGroups = group.ToString();
         }
 
         public string GetSelections(string selections)
@@ -137,20 +143,27 @@ namespace SimpleWebTicket
         /// <param name="selections">Semicolon separated list of selections, ie: LB38,Yellow;LB39,Banana (Note: Only the first selection works at the moment)</param>
         public void RedirectToQlikView(string document = "", string host = "", string selections = "")
         {
-            if (String.IsNullOrEmpty(document) || String.IsNullOrEmpty(host))
+            var AccessPointServer = ConfigurationManager.AppSettings["AccessPointServer"];
+
+            if (!AccessPointServer.EndsWith("/"))
+                AccessPointServer += "/";
+
+            var TryUrl = ConfigurationManager.AppSettings["TryUrl"];
+            var BackUrl = ConfigurationManager.AppSettings["BackUrl"];
+
+            if (String.IsNullOrEmpty(document) && String.IsNullOrEmpty(host))
             {
-                Response.Redirect(string.Format("{0}QvAJAXZfc/Authenticate.aspx?type=html&webticket={1}&try={2}&back={3}", AccessPointServer, _webTicket, TryUrl, BackUrl));
+                Response.Redirect(string.Format("{0}QvAJAXZfc/Authenticate.aspx?type=html&webticket={1}&try={2}&back={3}", AccessPointServer, UserDetails.WebTicket, Uri.EscapeUriString(TryUrl), Uri.EscapeUriString(BackUrl)));
             }
             else
             {
                 if (!String.IsNullOrEmpty(selections))
                     selections = GetSelections(selections);
 
-                Response.Redirect(string.Format("{0}QvAJAXZfc/Authenticate.aspx?type=html&webticket={1}&try={2}&back={3}", AccessPointServer, _webTicket, Uri.EscapeDataString("/QvAJAXZfc/AccessPoint.aspx?open=&id=" + host + "%7C" + document + selections + "&client=Ajax"), BackUrl));
+                Response.Redirect(string.Format("{0}QvAJAXZfc/Authenticate.aspx?type=html&webticket={1}&try={2}&back={3}", AccessPointServer, UserDetails.WebTicket, Uri.EscapeDataString(AccessPointServer + "QvAJAXZfc/AccessPoint.aspx?open=&id=" + host + "%7C" + document + selections + "&client=Ajax"), BackUrl));
             }
         }
 
-    
     }
 
 }
