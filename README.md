@@ -1,3 +1,5 @@
+> Note: This project is deprecated and have been replaced by the much better [QvWebTicket](https://github.com/braathen/qv-webticket) project instead.
+
 About
 =====
 
